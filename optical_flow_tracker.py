@@ -19,7 +19,8 @@ class FlowTrackedObject:
 
 class OpticalFlowTracker:
     def __init__(self, fps: float, use_gpu: bool = False, history_length: int = 3):
-        self.detector = ColorDetector()
+        # Initialize with a lower minimum contour area for better sensitivity
+        self.detector = ColorDetector(min_contour_area=50)  # Reduced from default 100
         self.fps = fps
         self.dt = 1.0 / fps
         self.use_gpu = use_gpu
@@ -33,19 +34,21 @@ class OpticalFlowTracker:
             self.flow = cv2.DISOpticalFlow_create(cv2.DISOPTICAL_FLOW_PRESET_FAST)
             self.use_cuda = False
             
-        # Background subtractor
+        # Background subtractor with more sensitive parameters
         self.bg_subtractor = cv2.createBackgroundSubtractorMOG2(
-            history=500, varThreshold=16, detectShadows=False)
+            history=200,  # Reduced history for faster adaptation
+            varThreshold=8,  # Lower threshold for more sensitivity
+            detectShadows=False)
         
         self.prev_frame = None
         self.tracked_objects: Dict[str, FlowTrackedObject] = {}
         
         # Parameters
-        self.grid_size = 20  # pixels between flow points
-        self.max_points = 100  # maximum flow points
+        self.grid_size = 15  # Reduced grid size for denser flow points
+        self.max_points = 150  # Increased max points
         self.frame_shape = None
-        self.flow_reset_threshold = 5.0  # pixels, for detecting abrupt changes
-        self.ema_alpha = 0.3  # smoothing factor for filtering
+        self.flow_reset_threshold = 3.0  # Reduced threshold for better sensitivity
+        self.ema_alpha = 0.4  # Increased alpha for faster response
     
     def _create_flow_points(self, frame_shape: Tuple[int, int]) -> np.ndarray:
         """Create a grid of points for optical flow tracking."""
@@ -70,8 +73,11 @@ class OpticalFlowTracker:
         self.frame_shape = frame.shape
         gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         
-        # Apply background subtraction
+        # Apply background subtraction with morphological operations
         fg_mask = self.bg_subtractor.apply(frame)
+        kernel = np.ones((3,3), np.uint8)
+        fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_OPEN, kernel)
+        fg_mask = cv2.morphologyEx(fg_mask, cv2.MORPH_CLOSE, kernel)
         frame_masked = cv2.bitwise_and(frame, frame, mask=fg_mask)
         
         if self.prev_frame is None:
@@ -110,9 +116,9 @@ class OpticalFlowTracker:
                     del self.tracked_objects[color]
                 continue
             
-            # Find flow vectors near the detected object
+            # Find flow vectors near the detected object with larger search radius
             distances = np.linalg.norm(new_points - current_pos, axis=1)
-            nearby_indices = np.where(distances < self.grid_size * 2)[0]
+            nearby_indices = np.where(distances < self.grid_size * 3)[0]  # Increased search radius
             
             if len(nearby_indices) > 0:
                 nearby_points = self.flow_points[nearby_indices]
