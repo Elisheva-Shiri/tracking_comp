@@ -3,12 +3,12 @@ import numpy as np
 from typing import Dict, Tuple, Optional
 from utils import COLOR_RANGES
 
-class ColorDetector:
+class Detector:
     def __init__(self, min_contour_area: int = 100):
         self.min_contour_area = min_contour_area
         self.colors = list(COLOR_RANGES.keys())
     
-    def detect_colors(self, frame: np.ndarray) -> Dict[str, Optional[Tuple[float, float]]]:
+    def _colors(self, frame: np.ndarray) -> Dict[str, Optional[Tuple[float, float]]]:
         """
         Detect the most prominent object of each color in the frame.
         Returns a dictionary with color names as keys and (x, y) center coordinates as values.
