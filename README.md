@@ -19,10 +19,13 @@ This system provides real-time tracking of red, blue, and yellow objects using e
 ## Requirements
 
 - Python 3.8 or higher
-- OpenCV 4.8.0 or higher
-- NumPy 1.24.0 or higher
-- PyTorch 2.0.0 or higher (for GPU support)
-- Other dependencies listed in `requirements.txt`
+   * opencv-python>=4.8.0
+   * numpy>=1.24.0
+   * pandas>=2.0.0
+   * tqdm>=4.65.0
+   * python-dateutil>=2.8.2
+   * torch>=2.0.0  # For GPU acceleration
+   * torchvision>=0.15.0 
 
 ## Installation
 
@@ -70,26 +73,3 @@ The tracking data CSV includes the following columns:
 - processing_time: Time taken to process the frame
 - method: Tracking method used
 - device: Processing device used
-
-## Performance
-
-- The system is optimized for real-time processing
-- Frame skipping is implemented if processing falls behind
-- GPU acceleration is available for optical flow tracking
-- Target processing time is < 10ms per frame
-- Maximum input resolution: 640x360
-
-## Notes
-
-- Color detection uses predefined HSV ranges that may need adjustment for your specific lighting conditions
-- The system tracks the most prominent object of each color
-- For best performance, ensure good lighting conditions and clear color separation
-- GPU acceleration requires CUDA-compatible hardware and drivers
-
-## Troubleshooting
-
-If you encounter issues:
-1. Check the run log file for detailed error messages
-2. Ensure your webcam is properly connected and accessible
-3. Verify that all dependencies are correctly installed
-4. For GPU issues, check CUDA installation and compatibility 

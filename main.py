@@ -9,7 +9,9 @@ import select
 import os
 
 from utils import (
-    get_user_inputs, create_output_directory, check_gpu_availability,
+    get_user_inputs, 
+    create_output_directory, 
+    check_gpu_availability,
     get_frame_rate
 )
 from frame_tracker import FrameTracker, TrackedObject
